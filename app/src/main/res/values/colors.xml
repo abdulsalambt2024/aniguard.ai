@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_forest">#1A3C2B</color>
+    <color name="primary_forest_dark">#122A1E</color>
+    <color name="secondary_amber">#F5A623</color>
+    <color name="accent_mint">#A5C9B4</color>
+    <color name="background_warm">#F3F2ED</color>
+    <color name="surface_white">#FFFFFF</color>
+    <color name="text_dark">#1A1A1A</color>
+    <color name="text_muted">#6B7280</color>
+    <color name="status_critical_bg">#FDECEA</color>
+    <color name="status_critical_text">#C62828</color>
+    <color name="status_watch_bg">#FFF3E0</color>
+    <color name="status_watch_text">#E65100</color>
+    <color name="status_healthy_bg">#E8F5E9</color>
+    <color name="status_healthy_text">#2E7D32</color>
+    <color name="status_info_bg">#E3F2FD</color>
+    <color name="status_info_text">#1565C0</color>
+</resources>

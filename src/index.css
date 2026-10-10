@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary - Rose 500 (Lovable Red/Pink) */
+    --primary: 346 87% 60%;
+    --primary-foreground: 355 100% 100%;
+    
+    /* Secondary - Purple 500 */
+    --secondary: 270 95% 75%;
+    --secondary-foreground: 270 60% 99%;
+    
+    /* Accent - Amber/Gold */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Background - Very subtle warm white */
+    --background: 330 30% 99%;
+    --foreground: 222 47% 11%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    --muted: 330 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    
+    --border: 330 20% 93%;
+    --input: 330 20% 93%;
+    --ring: 346 87% 60%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --radius: 1rem; /* More rounded corners */
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 346 87% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 330 20% 96%;
+    --sidebar-accent-foreground: 240 5.3% 26.1%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 346 87% 60%;
+  }
+
+  .dark {
+    /* Background - Deep Purple/Slate */
+    --background: 260 40% 8%;
+    --foreground: 210 40% 98%;
+    
+    --card: 260 40% 10%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 260 40% 10%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 346 87% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 270 95% 65%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    
+    --muted: 260 30% 15%;
+    --muted-foreground: 217 33% 64%;
+    
+    --border: 260 30% 15%;
+    --input: 260 30% 15%;
+    --ring: 346 87% 60%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Sidebar */
+    --sidebar-background: 260 40% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 346 87% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 260 30% 15%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 260 30% 15%;
+    --sidebar-ring: 346 87% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+  
+  /* Smooth scrolling and glassmorphism utilities */
+  .glass-card {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg;
+  }
+  
+  .glass-button {
+    @apply bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 transition-all duration-300;
+  }
+}
