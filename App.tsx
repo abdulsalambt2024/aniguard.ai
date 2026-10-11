@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { UserProfile, UserRole, AppLanguage, BioMaterialListing, Conversation, ConversationMessage, AdminUser } from './types';
-import ProfileSetup from './components/ProfileSetup';
+import React, { useState } from 'react';
+import { UserProfile, UserRole, AppLanguage, BioMaterialListing, AdminUser } from './types';
 import HomeDashboard from './components/HomeDashboard';
 import HerdPage from './components/HerdPage';
 import HealthAlerts from './components/HealthAlerts';
@@ -10,11 +9,11 @@ import ProfitDashboard from './components/ProfitDashboard';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { NotificationReminderBar } from './components/NotificationReminderBar';
-import { getCurrentLocation } from './services/locationService';
+import { OfflineModeManager } from './components/OfflineModeManager';
 
 const App: React.FC = () => {
   // Pre-seed default profile matching "Namaste, Ramesh" in the designs
-  const [profile, setProfile] = useState<UserProfile>(() => {
+  const [profile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('aniguard_profile');
     if (saved) {
       try {
@@ -52,16 +51,6 @@ const App: React.FC = () => {
       { id: '2', farmerName: 'Venkatesh Rao', materialName: 'Dry Neem Leaves', quantity: 200, region: 'Andhra Pradesh', coords: { lat: 17.385, lng: 78.486 }, contactInfo: 'Chat on AniGuard', availableDate: '2024-05-10' },
     ];
   });
-
-  const handleProfileComplete = async (newProfile: UserProfile) => {
-    try {
-      const coords = await getCurrentLocation();
-      newProfile.coords = coords;
-    } catch (_) {}
-    setProfile(newProfile);
-    localStorage.setItem('aniguard_profile', JSON.stringify(newProfile));
-    setActiveTab('home');
-  };
 
   const handleAdminLogin = (user: AdminUser) => {
     setAdminUser(user);
@@ -123,7 +112,10 @@ const App: React.FC = () => {
         title="Admin Entry"
       />
 
-      <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-6 pb-4">
+      <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-4 pb-4">
+        {/* Service Worker Offline Mode & Sync Controller */}
+        <OfflineModeManager />
+
         {/* Local Notification Scheduler & Livestock Reminders */}
         <NotificationReminderBar />
 

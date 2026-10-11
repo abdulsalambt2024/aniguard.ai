@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { UserProfile } from '../types';
 import { RegionalDiseaseHeatmap } from './RegionalDiseaseHeatmap';
+import { WeatherLivestockAlerts } from './WeatherLivestockAlerts';
 
 interface Props {
   profile: UserProfile;
@@ -23,19 +23,19 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs text-gray-500">GreenPastures Dairy Farm · Anand</p>
-          <h1 className="text-3xl font-bold text-gray-900 mt-0.5">Namaste, Ramesh</h1>
+          <p className="text-xs text-gray-500">GreenPastures Dairy Farm · Anand, Gujarat</p>
+          <h1 className="text-3xl font-bold text-gray-900 mt-0.5">Namaste, {profile?.name || 'Ramesh'}</h1>
         </div>
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-md"
           style={{ backgroundColor: '#1a3c2b' }}
         >
-          R
+          {profile?.name ? profile.name[0] : 'R'}
         </div>
       </div>
 
-      {/* Herd Health Card */}
-      <div className="rounded-2xl p-5 flex items-center gap-4" style={{ backgroundColor: '#1a3c2b' }}>
+      {/* Herd Health Overview Card */}
+      <div className="rounded-2xl p-5 flex items-center gap-4 shadow-sm" style={{ backgroundColor: '#1a3c2b' }}>
         {/* Donut */}
         <div className="relative flex-shrink-0 w-20 h-20">
           <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
@@ -58,7 +58,7 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
           <p className="text-xs mt-1" style={{ color: '#a5c9b4' }}>Moti is overdue for a vaccine. Lakshmi is sick.</p>
           <button
             onClick={() => onNavigate?.('alerts')}
-            className="mt-3 px-4 py-2 rounded-xl text-sm font-semibold active:scale-95 transition-transform"
+            className="mt-3 px-4 py-2 rounded-xl text-sm font-semibold active:scale-95 transition-transform shadow-xs"
             style={{ backgroundColor: '#F5A623', color: '#1a3c2b' }}
           >
             Run health scan
@@ -94,6 +94,9 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
         </div>
       </div>
 
+      {/* Real-Time Weather API & Breed-Specific Thermal/Humidity Alerts */}
+      <WeatherLivestockAlerts profile={profile} />
+
       {/* Needs You Today */}
       <div>
         <h2 className="text-base font-bold text-gray-900 mb-3">Needs you today</h2>
@@ -102,10 +105,10 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#fde8e8', color: '#c0392b' }}>Urgent</span>
-              <span className="text-xs text-gray-400">IN-GJ-3090</span>
+              <span className="text-xs text-gray-400 font-mono">IN-GJ-3090</span>
             </div>
             <p className="text-sm font-bold text-gray-900 mt-2">Moti: PPR vaccine overdue</p>
-            <p className="text-xs text-gray-500 mt-0.5">Book a vet to give the booster.</p>
+            <p className="text-xs text-gray-500 mt-0.5">Book a vet to administer the Sungri 96 booster.</p>
             <button
               onClick={() => onNavigate?.('alerts')}
               className="mt-3 w-full py-2.5 rounded-xl text-sm font-semibold text-white active:scale-95 transition-transform"
@@ -118,14 +121,14 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
           {/* Watch */}
           <div
             onClick={() => onNavigate?.('alerts')}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer"
+            className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:border-gray-300 transition"
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#fff3e0', color: '#e65100' }}>Watch</span>
-              <span className="text-xs text-gray-400">IN-GJ-1042</span>
+              <span className="text-xs text-gray-400 font-mono">IN-GJ-1042</span>
             </div>
             <p className="text-sm font-bold text-gray-900 mt-2">Gauri: month 6 of pregnancy</p>
-            <p className="text-xs text-gray-500 mt-0.5">Add 0.8 kg concentrate feed per day.</p>
+            <p className="text-xs text-gray-500 mt-0.5">Add 0.8 kg concentrate feed and calcium-phosphorus mix.</p>
           </div>
         </div>
       </div>
@@ -133,7 +136,7 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
       {/* Regional Disease Outbreak Heatmap (D3 visualization) */}
       <RegionalDiseaseHeatmap />
 
-      {/* Animal Row */}
+      {/* Animal Roster Quick Row */}
       <div className="flex justify-between">
         {animals.map((a, i) => (
           <div
@@ -142,7 +145,7 @@ const HomeDashboard: React.FC<Props> = ({ profile, onNavigate }) => {
             className="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80 transition"
           >
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-base font-bold"
+              className="w-12 h-12 rounded-full flex items-center justify-center text-base font-bold shadow-2xs"
               style={{ backgroundColor: a.color, color: a.textColor }}
             >
               {a.initial}

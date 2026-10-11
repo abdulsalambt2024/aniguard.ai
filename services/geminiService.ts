@@ -3,7 +3,10 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { SYSTEM_INSTRUCTION, getLanguageInstruction } from "../constants";
 import { HealthAnalysisResult, HoldSellAnalysis, ProfitReport, AppLanguage, DiseaseAnalysisResult, MarketAdvisoryResult, VetClinic } from "../types";
 
-const getClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getClient = () => {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+  return new GoogleGenAI({ apiKey });
+};
 
 /**
  * Generate high-quality Speech from Text using Gemini TTS
