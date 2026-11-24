@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, X, Leaf } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Sparkles, X, Leaf } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
