@@ -149,7 +149,7 @@ export async function getProfitReport(
   };
 }
 
-export async function generateFarmerStories(_region: string, _language: AppLanguage): Promise<any[]> {
+export async function generateFarmerStories(_region: string, _language: AppLanguage): Promise<unknown[]> {
   // Avoid generating fictional farmer testimonials and presenting them as real stories.
   return [];
 }
