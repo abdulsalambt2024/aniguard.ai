@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const sessionRevision = useRef(0);
 
   // Roles are resolved only from database-controlled records/RPC, never from email addresses or user-editable profile metadata.
   const determineRole = async (userId: string): Promise<UserRole> => {
@@ -52,17 +53,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const handleUserSession = async (currentSession: Session | null) => {
+    const revision = ++sessionRevision.current;
     setSession(currentSession);
     const currentUser = currentSession?.user ?? null;
     setUser(currentUser);
-    setRole(currentUser ? await determineRole(currentUser.id) : null);
+    const nextRole = currentUser ? await determineRole(currentUser.id) : null;
+    // Ignore a delayed role lookup if a newer auth event/session has already arrived.
+    if (revision === sessionRevision.current) setRole(nextRole);
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, currentSession) => {
-        await handleUserSession(currentSession);
-        setLoading(false);
+      (_event, currentSession) => {
+        // Do not await network/database work inside Supabase's auth callback; doing so
+        // can hold the auth lock and interfere with token refresh or sign-in operations.
+        queueMicrotask(() => {
+          void handleUserSession(currentSession).finally(() => setLoading(false));
+        });
       }
     );
 
