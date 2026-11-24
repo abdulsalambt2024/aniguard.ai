@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Sparkles, X, Leaf } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, X, Leaf } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -241,7 +241,7 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
 
       {/* Brand Header */}
       <div className="flex flex-col items-center text-center mt-1 mb-5">
-        <div className="relative mb-2 group cursor-pointer" onClick={() => setShowPresets(!showPresets)}>
+        <div className="relative mb-2">
           <AniGuardLogoSvg className="w-20 h-20 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
         </div>
 
