@@ -1,0 +1,37 @@
+name: Web prototype checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [security/prototype-demo-guard]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aniguard-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: ''
+
+      - name: Install dependencies
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
