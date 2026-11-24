@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Sparkles, X, Leaf } from 'lucide-react';
-import { useAuth, PROTECTED_SUPER_ADMIN_EMAILS } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface AniGuardAuthCardProps {
@@ -136,7 +136,6 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [showPresets, setShowPresets] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,9 +185,7 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
           setErrorMsg(error.message || 'Failed to create account.');
         } else {
           const userEmail = data?.user?.email || email;
-          const currentRole = PROTECTED_SUPER_ADMIN_EMAILS.includes(userEmail.toLowerCase())
-            ? 'super_admin'
-            : 'user';
+          const currentRole = 'user';
           toast.success('Account created successfully!');
           onSuccess?.(userEmail, currentRole);
           if (onClose) onClose();
@@ -214,9 +211,7 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
         setErrorMsg(error.message || 'Invalid email or password.');
       } else {
         const userEmail = data?.user?.email || email;
-        const currentRole = PROTECTED_SUPER_ADMIN_EMAILS.includes(userEmail.toLowerCase())
-          ? 'super_admin'
-          : role || 'user';
+        const currentRole = role || 'user';
         toast.success('Welcome back!');
         onSuccess?.(userEmail, currentRole);
         if (onClose) onClose();
@@ -226,15 +221,6 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePresetSelect = (presetEmail: string, presetName: string) => {
-    setEmail(presetEmail);
-    setFullName(presetName);
-    setPassword('AniGuard@2026!');
-    setConfirmPassword('AniGuard@2026!');
-    setErrorMsg(null);
-    toast.info(`Autofilled credentials for ${presetName}`);
   };
 
   return (
