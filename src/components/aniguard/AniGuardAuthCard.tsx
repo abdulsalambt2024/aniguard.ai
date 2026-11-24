@@ -252,60 +252,6 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
           Healthier Livestock <span className="text-emerald-500 font-bold">|</span> Stronger Farms
         </p>
 
-        {/* Preset autofill bar toggle */}
-        <div className="mt-2">
-          <button
-            type="button"
-            onClick={() => setShowPresets(!showPresets)}
-            className="text-[10px] font-medium text-emerald-400/80 hover:text-emerald-300 flex items-center gap-1 bg-[#092e26]/80 px-2.5 py-1 rounded-full border border-emerald-800/40 transition"
-          >
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>{showPresets ? 'Hide Demo Presets' : '⚡ Demo Autofill Logins'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Collapsible Quick Presets Panel */}
-      {showPresets && (
-        <div className="mb-5 p-3 rounded-2xl bg-[#041914] border border-emerald-800/50 space-y-2 animate-in fade-in zoom-in-95 duration-200">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Quick Test Accounts:</p>
-          <div className="grid grid-cols-2 gap-1.5 text-left">
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('abdul.salam.bt.2024@miet.ac.in', 'Abdul Salam')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-amber-500/40 hover:border-amber-400 text-[10px] transition"
-            >
-              <span className="font-bold text-amber-300 block truncate">Abdul Salam</span>
-              <span className="text-[9px] text-slate-400">Super Admin</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('hayatamr9608@gmail.com', 'Hayat Amr')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-amber-500/40 hover:border-amber-400 text-[10px] transition"
-            >
-              <span className="font-bold text-amber-300 block truncate">Hayat Amr</span>
-              <span className="text-[9px] text-slate-400">Super Admin</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('dr.arvind.patel@aniguard.in', 'Dr. Arvind Patel')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-cyan-500/40 hover:border-cyan-400 text-[10px] transition"
-            >
-              <span className="font-bold text-cyan-300 block truncate">Dr. Arvind Patel</span>
-              <span className="text-[9px] text-slate-400">Veterinary</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('ramesh.kumar@dairy.in', 'Ramesh Kumar')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-emerald-500/40 hover:border-emerald-400 text-[10px] transition"
-            >
-              <span className="font-bold text-emerald-300 block truncate">Ramesh Kumar</span>
-              <span className="text-[9px] text-slate-400">Dairy Farmer</span>
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Title & Description */}
       <div className="mb-5 text-left">
         <h2 className="text-xl font-bold text-white tracking-tight">
