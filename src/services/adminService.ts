@@ -26,8 +26,8 @@ export interface AuditLogEntry {
   action: string;
   entity_type: string;
   entity_id: string;
-  old_value: any;
-  new_value: any;
+  old_value: unknown;
+  new_value: unknown;
   reason?: string;
   created_at: string;
 }
@@ -35,7 +35,7 @@ export interface AuditLogEntry {
 export interface AppSettingItem {
   id: string;
   key: string;
-  value: any;
+  value: unknown;
   category: string;
   description: string;
   is_security_critical: boolean;
