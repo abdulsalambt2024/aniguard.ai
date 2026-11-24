@@ -4,8 +4,6 @@
  * authenticated server-side endpoints with database-enforced authorization.
  * Browser storage is never an authority for administrator permissions.
  */
-import { supabase } from '@/integrations/supabase/client';
-
 export interface AdminUserRecord {
   id: string;
   user_id: string;
