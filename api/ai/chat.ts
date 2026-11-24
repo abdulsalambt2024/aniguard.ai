@@ -44,7 +44,19 @@ function parseBody(body: unknown): { message: string; history: ChatItem[] } | nu
   return { message, history };
 }
 
-export default async function handler(req: any, res: any) {
+type ApiRequest = {
+  method?: string;
+  headers?: Record<string, string | string[] | undefined>;
+  body?: unknown;
+};
+
+type ApiResponse = {
+  setHeader(name: string, value: string): void;
+  status(code: number): ApiResponse;
+  json(body: Record<string, unknown>): ApiResponse;
+};
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   res.setHeader('Cache-Control', 'no-store');
 
   if (req.method !== 'POST') {
@@ -52,7 +64,8 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const authorization = req.headers?.authorization || req.headers?.Authorization;
+  const rawAuthorization = req.headers?.authorization || req.headers?.Authorization;
+  const authorization = Array.isArray(rawAuthorization) ? rawAuthorization[0] : rawAuthorization;
   const token = typeof authorization === 'string' && authorization.startsWith('Bearer ')
     ? authorization.slice(7).trim()
     : '';
