@@ -28,14 +28,20 @@ New tests cover request-limit boundaries, user separation, window reset, fail-cl
 
 ## Verification
 
-GitHub Actions [run 45537907648](https://github.com/abdulsalambt2024/aniguard.ai/actions/runs/45537907648) completed **successfully** on the latest head:
+GitHub Actions [run 45537907648](https://github.com/abdulsalambt2024/aniguard.ai/actions/runs/45537907648) completed **successfully** on commit `43f0878...`:
 
 1. Dependency installation — passed.
 2. Five assistant rate-limiter unit tests — passed.
 3. Targeted ESLint for changed server/integration modules — passed.
 4. Vite production build — passed.
 
-This run does **not** test the Vercel serverless route with real Supabase tokens, a configured Gemini credential, or real test users. The full-repository lint baseline previously reported 172 legacy lint errors; the workflow intentionally runs targeted lint on the changed integration/server files. Full lint cleanup remains outstanding.
+A follow-up added a targeted TypeScript check for the Vercel assistant route:
+
+- Commit `5462b605d31fa57b4b0906c2599a459db00423f4` adds `tsc --noEmit` to CI for `api/ai/chat.ts`.
+- Pull-request workflow [run 45538736010](https://github.com/abdulsalambt2024/aniguard.ai/actions/runs/45538736010) completed **successfully**: dependency install, five rate-limiter tests, server-route TypeScript check, targeted ESLint and Vite production build all passed.
+- Latest PR head at this follow-up: `5462b605d31fa57b4b0906c2599a459db00423f4`.
+
+These checks do **not** test the Vercel serverless route with real Supabase tokens, a configured Gemini credential, or real test users. The full-repository lint baseline previously reported 172 legacy lint errors; the workflow intentionally runs targeted lint on changed integration/server files. Full lint cleanup remains outstanding.
 
 ## Deployment and integration status
 
