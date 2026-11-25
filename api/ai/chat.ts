@@ -1,24 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { allowAssistantRequest } from './chat-rate-limit.mjs';
 
 type ChatRole = 'user' | 'assistant';
 type ChatItem = { role: ChatRole; parts: string };
-
-const requestCounts = new Map<string, { count: number; windowStartedAt: number }>();
-const RATE_WINDOW_MS = 60_000;
-const RATE_LIMIT = 15;
-
-function allowRequest(userId: string): boolean {
-  const now = Date.now();
-  const current = requestCounts.get(userId);
-  if (!current || now - current.windowStartedAt >= RATE_WINDOW_MS) {
-    requestCounts.set(userId, { count: 1, windowStartedAt: now });
-    return true;
-  }
-  if (current.count >= RATE_LIMIT) return false;
-  current.count += 1;
-  return true;
-}
 
 function parseBody(body: unknown): { message: string; history: ChatItem[] } | null {
   let value = body;
@@ -91,7 +76,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const { data: { user }, error: authError } = await authClient.auth.getUser(token);
     if (authError || !user) return res.status(401).json({ error: 'Invalid or expired session' });
 
-    if (!allowRequest(user.id)) {
+    // The limiter has bounded memory and fails closed at capacity. It is still
+    // per serverless instance; use a shared store before treating it as global.
+    if (!allowAssistantRequest(user.id)) {
       return res.status(429).json({ error: 'Rate limit exceeded' });
     }
 
