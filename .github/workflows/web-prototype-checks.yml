@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-package-lock --no-audit --no-fund
 
+      - name: Test assistant rate limiter
+        run: node --test api/ai/chat-rate-limit.test.mjs
+
       - name: Lint changed server and integration modules
         run: npx eslint api/ai/chat.ts services/geminiService.ts src/services/geminiService.ts src/integrations/supabase/client.ts vite.config.ts
 
