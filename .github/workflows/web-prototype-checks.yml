@@ -33,6 +33,9 @@ jobs:
       - name: Test assistant rate limiter
         run: node --test api/ai/chat-rate-limit.test.mjs
 
+      - name: Type-check the Vercel assistant route
+        run: npx tsc --noEmit --moduleResolution bundler --module esnext --target ES2022 --esModuleInterop --skipLibCheck --types node api/ai/chat.ts
+
       - name: Lint changed server and integration modules
         run: npx eslint api/ai/chat.ts services/geminiService.ts src/services/geminiService.ts src/integrations/supabase/client.ts vite.config.ts
 
