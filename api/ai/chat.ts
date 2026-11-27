@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { allowAssistantRequest } from './chat-rate-limit.mjs';
+import { extractBearerToken } from './bearer-token.mjs';
 
 type ChatRole = 'user' | 'assistant';
 type ChatItem = { role: ChatRole; parts: string };
@@ -50,10 +51,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   const rawAuthorization = req.headers?.authorization || req.headers?.Authorization;
-  const authorization = Array.isArray(rawAuthorization) ? rawAuthorization[0] : rawAuthorization;
-  const token = typeof authorization === 'string' && authorization.startsWith('Bearer ')
-    ? authorization.slice(7).trim()
-    : '';
+  const token = extractBearerToken(rawAuthorization);
 
   if (!token) return res.status(401).json({ error: 'Authentication required' });
 
