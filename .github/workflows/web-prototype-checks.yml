@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --no-package-lock --no-audit --no-fund
 
-      - name: Test assistant rate limiter
-        run: node --test api/ai/chat-rate-limit.test.mjs
+      - name: Test assistant request guards
+        run: node --test api/ai/chat-rate-limit.test.mjs api/ai/bearer-token.test.mjs
 
       - name: Type-check the Vercel assistant route
         run: npx tsc --noEmit --moduleResolution bundler --module esnext --target ES2022 --esModuleInterop --skipLibCheck --types node api/ai/chat.ts
