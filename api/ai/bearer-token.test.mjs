@@ -17,7 +17,11 @@ test('rejects missing, empty, malformed and non-Bearer values', () => {
   }
 });
 
-test('uses only the first value when a header array is supplied', () => {
-  assert.equal(extractBearerToken(['Bearer first-token', 'Bearer second-token']), 'first-token');
+test('accepts a single-element header array', () => {
+  assert.equal(extractBearerToken(['Bearer only-token']), 'only-token');
+});
+
+test('rejects duplicate authorization header values as ambiguous', () => {
+  assert.equal(extractBearerToken(['Bearer first-token', 'Bearer second-token']), '');
   assert.equal(extractBearerToken(['Basic credentials', 'Bearer second-token']), '');
 });
