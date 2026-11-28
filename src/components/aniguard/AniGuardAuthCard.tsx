@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Sparkles, X, Leaf } from 'lucide-react';
-import { useAuth, PROTECTED_SUPER_ADMIN_EMAILS } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface AniGuardAuthCardProps {
@@ -136,7 +136,6 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [showPresets, setShowPresets] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,9 +185,7 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
           setErrorMsg(error.message || 'Failed to create account.');
         } else {
           const userEmail = data?.user?.email || email;
-          const currentRole = PROTECTED_SUPER_ADMIN_EMAILS.includes(userEmail.toLowerCase())
-            ? 'super_admin'
-            : 'user';
+          const currentRole = 'user';
           toast.success('Account created successfully!');
           onSuccess?.(userEmail, currentRole);
           if (onClose) onClose();
@@ -214,9 +211,7 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
         setErrorMsg(error.message || 'Invalid email or password.');
       } else {
         const userEmail = data?.user?.email || email;
-        const currentRole = PROTECTED_SUPER_ADMIN_EMAILS.includes(userEmail.toLowerCase())
-          ? 'super_admin'
-          : role || 'user';
+        const currentRole = role || 'user';
         toast.success('Welcome back!');
         onSuccess?.(userEmail, currentRole);
         if (onClose) onClose();
@@ -226,15 +221,6 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePresetSelect = (presetEmail: string, presetName: string) => {
-    setEmail(presetEmail);
-    setFullName(presetName);
-    setPassword('AniGuard@2026!');
-    setConfirmPassword('AniGuard@2026!');
-    setErrorMsg(null);
-    toast.info(`Autofilled credentials for ${presetName}`);
   };
 
   return (
@@ -255,7 +241,7 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
 
       {/* Brand Header */}
       <div className="flex flex-col items-center text-center mt-1 mb-5">
-        <div className="relative mb-2 group cursor-pointer" onClick={() => setShowPresets(!showPresets)}>
+        <div className="relative mb-2">
           <AniGuardLogoSvg className="w-20 h-20 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
         </div>
 
@@ -265,60 +251,6 @@ export const AniGuardAuthCard: React.FC<AniGuardAuthCardProps> = ({
         <p className="text-[11px] font-medium tracking-wide text-slate-300/80 mt-0.5">
           Healthier Livestock <span className="text-emerald-500 font-bold">|</span> Stronger Farms
         </p>
-
-        {/* Preset autofill bar toggle */}
-        <div className="mt-2">
-          <button
-            type="button"
-            onClick={() => setShowPresets(!showPresets)}
-            className="text-[10px] font-medium text-emerald-400/80 hover:text-emerald-300 flex items-center gap-1 bg-[#092e26]/80 px-2.5 py-1 rounded-full border border-emerald-800/40 transition"
-          >
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>{showPresets ? 'Hide Demo Presets' : '⚡ Demo Autofill Logins'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Collapsible Quick Presets Panel */}
-      {showPresets && (
-        <div className="mb-5 p-3 rounded-2xl bg-[#041914] border border-emerald-800/50 space-y-2 animate-in fade-in zoom-in-95 duration-200">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Quick Test Accounts:</p>
-          <div className="grid grid-cols-2 gap-1.5 text-left">
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('abdul.salam.bt.2024@miet.ac.in', 'Abdul Salam')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-amber-500/40 hover:border-amber-400 text-[10px] transition"
-            >
-              <span className="font-bold text-amber-300 block truncate">Abdul Salam</span>
-              <span className="text-[9px] text-slate-400">Super Admin</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('hayatamr9608@gmail.com', 'Hayat Amr')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-amber-500/40 hover:border-amber-400 text-[10px] transition"
-            >
-              <span className="font-bold text-amber-300 block truncate">Hayat Amr</span>
-              <span className="text-[9px] text-slate-400">Super Admin</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('dr.arvind.patel@aniguard.in', 'Dr. Arvind Patel')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-cyan-500/40 hover:border-cyan-400 text-[10px] transition"
-            >
-              <span className="font-bold text-cyan-300 block truncate">Dr. Arvind Patel</span>
-              <span className="text-[9px] text-slate-400">Veterinary</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetSelect('ramesh.kumar@dairy.in', 'Ramesh Kumar')}
-              className="p-1.5 rounded-xl bg-[#092d24] border border-emerald-500/40 hover:border-emerald-400 text-[10px] transition"
-            >
-              <span className="font-bold text-emerald-300 block truncate">Ramesh Kumar</span>
-              <span className="text-[9px] text-slate-400">Dairy Farmer</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Main Title & Description */}
       <div className="mb-5 text-left">

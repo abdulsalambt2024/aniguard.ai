@@ -243,12 +243,12 @@ export const AniGuardAdminPanel: React.FC<AniGuardAdminPanelProps> = ({
                 </h3>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                These three verified identities are protected at the database schema and trigger
-                level. No database operation or client call can demote, delete, or revoke their
-                administrative rights:
+                No privileged identities are embedded in this browser UI. Administrative access must be assigned and enforced by verified server-side roles and database policies:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {PROTECTED_SUPER_ADMIN_EMAILS.map((email, i) => (
+                {PROTECTED_SUPER_ADMIN_EMAILS.length === 0 ? (
+                  <p className="text-xs text-slate-400">No identities are configured in the client. This panel is not an authority for role assignment.</p>
+                ) : PROTECTED_SUPER_ADMIN_EMAILS.map((email, i) => (
                   <div
                     key={i}
                     className="p-3 rounded-lg bg-[#0E1A26] border border-[#D4AF37]/40 flex items-center justify-between"

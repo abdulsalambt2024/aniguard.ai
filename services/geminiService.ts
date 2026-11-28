@@ -1,352 +1,159 @@
+import {
+  HealthAnalysisResult,
+  HoldSellAnalysis,
+  ProfitReport,
+  AppLanguage,
+  DiseaseAnalysisResult,
+  MarketAdvisoryResult,
+  VetClinic,
+} from '../types';
+import { supabase } from '../src/integrations/supabase/client';
 
-import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { SYSTEM_INSTRUCTION, getLanguageInstruction } from "../constants";
-import { HealthAnalysisResult, HoldSellAnalysis, ProfitReport, AppLanguage, DiseaseAnalysisResult, MarketAdvisoryResult, VetClinic } from "../types";
-
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
-  return new GoogleGenAI({ apiKey });
-};
-
-/**
- * Generate high-quality Speech from Text using Gemini TTS
- */
-export async function generateSpeech(text: string, language: AppLanguage): Promise<Uint8Array | null> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const langPrompt = getLanguageInstruction(language);
-  
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Say this naturally in a helpful tone: ${text}. ${langPrompt}` }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Zephyr' },
-          },
-        },
-      },
-    });
-
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (!base64Audio) return null;
-
-    // Decode base64 to Uint8Array (Raw PCM)
-    const binaryString = atob(base64Audio);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
-  } catch (error) {
-    console.error("TTS Generation Error:", error);
-    return null;
+async function authenticatedAssistantRequest(message: string): Promise<string> {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session?.access_token) {
+    throw new Error('Please sign in again to use the AniGuard assistant.');
   }
+
+  const response = await fetch('/api/ai/chat', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ message: message.slice(0, 1600), history: [] }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(response.status === 401
+      ? 'Your session has expired. Please sign in again.'
+      : 'The secure AniGuard assistant is temporarily unavailable.');
+  }
+  if (typeof payload.reply !== 'string') throw new Error('The assistant returned an invalid response.');
+  return payload.reply;
 }
 
-/**
- * General Chat with optional Thinking Mode for complex agricultural reasoning
- */
+const unavailable = (feature: string): Error =>
+  new Error(`${feature} is not enabled in this prototype. No automated diagnosis or treatment recommendation has been generated.`);
+
+export async function generateSpeech(_text: string, _language: AppLanguage): Promise<Uint8Array | null> {
+  // Browser-side Gemini credentials are intentionally not supported.
+  return null;
+}
+
 export async function getChatResponse(
-  prompt: string, 
-  context: string, 
-  language: AppLanguage, 
-  isComplex: boolean = false
+  prompt: string,
+  context: string,
+  language: AppLanguage,
+  _isComplex = false
 ): Promise<string> {
-  const ai = getClient();
-  const model = isComplex ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-  
-  const response = await ai.models.generateContent({
-    model,
-    contents: {
-      parts: [{ text: `User Context: ${context}\n${langPrompt}\nUser Question: ${prompt}` }]
-    },
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      ...(isComplex ? { thinkingConfig: { thinkingBudget: 32768 } } : {})
-    },
-  });
-
-  return response.text || "Connection failed.";
+  const safePrompt = `Language: ${language}. Farmer context: ${context}. Question: ${prompt}`;
+  return authenticatedAssistantRequest(safePrompt);
 }
 
-/**
- * Analyze uploaded video for key agricultural information
- */
-export async function analyzeVideo(base64Video: string, mimeType: string, prompt: string, language: AppLanguage): Promise<string> {
-  const ai = getClient();
-  const langPrompt = getLanguageInstruction(language);
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: {
-      parts: [
-        { inlineData: { data: base64Video, mimeType } },
-        { text: `${prompt} ${langPrompt}` }
-      ]
-    },
-    config: { systemInstruction: SYSTEM_INSTRUCTION }
-  });
-  return response.text || "Could not analyze video.";
+export async function analyzeVideo(
+  _base64Video: string,
+  _mimeType: string,
+  _prompt: string,
+  _language: AppLanguage
+): Promise<string> {
+  throw unavailable('Video analysis');
 }
 
-/**
- * Animate an image into a video using Veo
- */
-export async function animateImageToVideo(base64Image: string, mimeType: string, prompt: string, aspectRatio: '16:9' | '9:16' = '16:9'): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
-  let operation = await ai.models.generateVideos({
-    model: 'veo-3.1-fast-generate-preview',
-    prompt,
-    image: {
-      imageBytes: base64Image,
-      mimeType,
-    },
-    config: {
-      numberOfVideos: 1,
-      resolution: '720p',
-      aspectRatio
-    }
-  });
-
-  while (!operation.done) {
-    await new Promise(resolve => setTimeout(resolve, 10000));
-    operation = await ai.operations.getVideosOperation({ operation: operation });
-  }
-
-  const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  return `${downloadLink}&key=${process.env.API_KEY}`;
+export async function animateImageToVideo(
+  _base64Image: string,
+  _mimeType: string,
+  _prompt: string,
+  _aspectRatio: '16:9' | '9:16' = '16:9'
+): Promise<string> {
+  throw unavailable('Image-to-video generation');
 }
 
-export async function scanAnimalHealth(base64Image: string, symptoms: string, language: AppLanguage): Promise<HealthAnalysisResult> {
-  const ai = getClient();
-  const model = 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-  
-  const response = await ai.models.generateContent({
-    model,
-    contents: {
-      parts: [
-        { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-        { text: `Analyze this animal health scan. User noted symptoms: ${symptoms}. 
-          ${langPrompt}
-          Return a JSON:
-          {
-            "conditionName": "string",
-            "confidence": "string",
-            "severity": "MILD | URGENT | EMERGENCY",
-            "description": "string",
-            "treatmentPlan": {
-              "title": "string",
-              "actions": ["string"],
-              "immediateSteps": ["string"],
-              "advice": "string"
-            }
-          }`
-        }
-      ],
-    },
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-    },
-  });
-
-  return JSON.parse(response.text || '{}');
+export async function scanAnimalHealth(
+  _base64Image: string,
+  _symptoms: string,
+  _language: AppLanguage
+): Promise<HealthAnalysisResult> {
+  // Image-based disease classification is not validated and must not be presented as a diagnosis.
+  throw unavailable('Automated animal-photo classification; please submit the photo for veterinary review');
 }
 
-/**
- * Analyze uploaded plant specimen photo for diseases and provide organic treatment
- */
-export async function analyzeCropDisease(base64Image: string, region: string, language: AppLanguage): Promise<DiseaseAnalysisResult> {
-  const ai = getClient();
-  const model = 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: {
-      parts: [
-        { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-        { text: `Analyze this plant specimen from ${region}. Identify any diseases. 
-          ${langPrompt}
-          Return a JSON matching the DiseaseAnalysisResult interface:
-          {
-            "diseaseName": "string",
-            "confidence": "string",
-            "description": "string",
-            "organicTreatment": {
-              "title": "string",
-              "materials": ["string"],
-              "steps": ["string"],
-              "preparationTime": "string",
-              "applicationMethod": "string"
-            },
-            "costComparison": {
-              "chemicalEstimate": "string",
-              "organicEstimate": "string",
-              "savings": "string"
-            }
-          }`
-        }
-      ],
-    },
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-    },
-  });
-
-  return JSON.parse(response.text || '{}');
+export async function analyzeCropDisease(
+  _base64Image: string,
+  _region: string,
+  _language: AppLanguage
+): Promise<DiseaseAnalysisResult> {
+  throw unavailable('Automated crop-image classification');
 }
 
-export async function findNearbyVets(lat: number, lng: number, language: AppLanguage): Promise<{ text: string, clinics: VetClinic[] }> {
-  const ai = getClient();
-  const model = 'gemini-2.5-flash';
-  const langPrompt = getLanguageInstruction(language);
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: `Find 5 nearby veterinary clinics and government animal hospitals near latitude ${lat}, longitude ${lng}. ${langPrompt}`,
-    config: {
-      tools: [{ googleMaps: {} }],
-      toolConfig: {
-        retrievalConfig: {
-          latLng: { latitude: lat, longitude: lng }
-        }
-      }
-    }
-  });
-
-  const clinics: VetClinic[] = [];
-  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-  
-  chunks.forEach((chunk: any) => {
-    if (chunk.maps) {
-      clinics.push({
-        name: chunk.maps.title,
-        uri: chunk.maps.uri,
-        address: chunk.maps.placeAnswerSources?.[0]?.formattedAddress
-      });
-    }
-  });
-
+export async function findNearbyVets(
+  _lat: number,
+  _lng: number,
+  _language: AppLanguage
+): Promise<{ text: string; clinics: VetClinic[] }> {
   return {
-    text: response.text || "Here are some nearby clinics:",
-    clinics
+    text: 'A verified live veterinary directory is not connected yet. Please contact your nearest government veterinary hospital or district animal husbandry office. Do not rely on unverified clinic listings.',
+    clinics: [],
   };
 }
 
-export async function getMarketAdvisory(cropName: string, region: string, language: AppLanguage): Promise<MarketAdvisoryResult> {
-  const ai = getClient();
-  const model = 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: `Provide a real-time market advisory for ${cropName} in ${region} using Google Search for latest news and prices. ${langPrompt}. Return as JSON with web sources.`,
-    config: {
-      tools: [{ googleSearch: {} }],
-      responseMimeType: "application/json",
-    }
-  });
-
-  const data = JSON.parse(response.text || '{}');
-  data.sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-  return data;
+export async function getMarketAdvisory(
+  _cropName: string,
+  _region: string,
+  _language: AppLanguage
+): Promise<MarketAdvisoryResult> {
+  throw unavailable('Live market advisory; current prices and sources have not been verified');
 }
 
-export async function analyzeHoldSell(animal: string, price: string, health: string, framework: string, language: AppLanguage): Promise<HoldSellAnalysis> {
-  const ai = getClient();
-  const model = 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: `Evaluate the decision to HOLD or SELL: Animal: ${animal}, Price: ${price}, Health: ${health}. Using ${framework} framework. ${langPrompt}.
-      Return a JSON:
-      {
-        "decision": "HOLD | SELL",
-        "estimatedPriceNow": "string",
-        "projectedPriceFuture": "string",
-        "biologicalRiskScore": number,
-        "feedCostImpact": "string",
-        "riskFactors": ["string"],
-        "reasoning": "string"
-      }`,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-    }
-  });
-
-  return JSON.parse(response.text || '{}');
+export async function analyzeHoldSell(
+  _animal: string,
+  _price: string,
+  _health: string,
+  _framework: string,
+  _language: AppLanguage
+): Promise<HoldSellAnalysis> {
+  throw unavailable('AI hold/sell recommendation');
 }
 
-export async function getProfitReport(income: number, feed: number, vet: number, labor: number, language: AppLanguage): Promise<ProfitReport> {
-  const ai = getClient();
-  const model = 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: `Generate a profitability report for: Income: ${income}, Feed: ${feed}, Vet: ${vet}, Labor: ${labor}. ${langPrompt}.
-      Return a JSON:
-      {
-        "netProfit": "string",
-        "expenseBreakdown": {
-          "feed": "string",
-          "vet": "string",
-          "labor": "string",
-          "other": "string"
-        },
-        "efficiencyScore": number,
-        "recommendations": ["string"]
-      }`,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-    }
-  });
-
-  return JSON.parse(response.text || '{}');
-}
-
-export async function generateFarmerStories(region: string, language: AppLanguage): Promise<any[]> {
-  const ai = getClient();
-  const model = 'gemini-3-flash-preview';
-  const langPrompt = getLanguageInstruction(language);
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: `Generate 3 inspirational farmer success stories in ${region}. ${langPrompt}. 
-      Return a JSON array of objects with keys: farmer, location, crop, disease, story, shortSummary.`,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-    }
-  });
-
-  return JSON.parse(response.text || '[]');
-}
-
-export async function generateInstructionalVideo(prompt: string): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  let operation = await ai.models.generateVideos({
-    model: 'veo-3.1-fast-generate-preview',
-    prompt: `Professional agricultural demonstration: ${prompt}`,
-    config: {
-      numberOfVideos: 1,
-      resolution: '720p',
-      aspectRatio: '16:9'
-    }
-  });
-  while (!operation.done) {
-    await new Promise(resolve => setTimeout(resolve, 10000));
-    operation = await ai.operations.getVideosOperation({ operation: operation });
+export async function getProfitReport(
+  income: number,
+  feed: number,
+  vet: number,
+  labor: number,
+  _language: AppLanguage
+): Promise<ProfitReport> {
+  const values = [income, feed, vet, labor];
+  if (!values.every((value) => Number.isFinite(value) && value >= 0)) {
+    throw new Error('Enter valid non-negative income and expense values.');
   }
-  const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  return `${downloadLink}&key=${process.env.API_KEY}`;
+  const net = income - feed - vet - labor;
+  const efficiencyScore = income > 0
+    ? Math.round(Math.max(0, Math.min(100, (net / income) * 100)))
+    : 0;
+  return {
+    netProfit: net.toFixed(2),
+    expenseBreakdown: {
+      feed: feed.toFixed(2),
+      vet: vet.toFixed(2),
+      labor: labor.toFixed(2),
+      other: '0.00',
+    },
+    efficiencyScore,
+    recommendations: [
+      'This is a direct calculation from the values entered, not an AI forecast.',
+      'Add transport, medicine, vaccination, utilities and other costs for a more complete estimate.',
+      'Compare at least 30 days of records before making major farm decisions.',
+    ],
+  };
+}
+
+export async function generateFarmerStories(_region: string, _language: AppLanguage): Promise<unknown[]> {
+  // Avoid generating fictional farmer testimonials and presenting them as real stories.
+  return [];
+}
+
+export async function generateInstructionalVideo(_prompt: string): Promise<string> {
+  throw unavailable('AI video generation');
 }

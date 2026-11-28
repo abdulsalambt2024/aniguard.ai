@@ -1,0 +1,43 @@
+name: Web prototype checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [security/prototype-demo-guard]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aniguard-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: ''
+
+      - name: Install dependencies
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      - name: Test assistant request guards
+        run: node --test api/ai/chat-rate-limit.test.mjs api/ai/bearer-token.test.mjs
+
+      - name: Type-check the Vercel assistant route
+        run: npx tsc --noEmit --moduleResolution bundler --module esnext --target ES2022 --esModuleInterop --skipLibCheck --types node api/ai/chat.ts
+
+      - name: Lint changed server and integration modules
+        run: npx eslint api/ai/chat.ts services/geminiService.ts src/services/geminiService.ts src/integrations/supabase/client.ts vite.config.ts
+
+      - name: Production build
+        run: npm run build
