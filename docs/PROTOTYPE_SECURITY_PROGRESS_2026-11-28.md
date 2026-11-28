@@ -55,3 +55,8 @@ These checks do not call Supabase Auth with real farmer sessions or call Gemini 
 4. Replace per-instance rate limiting with a shared durable store before production.
 5. Integrate the web UI with the main AniGuard API and keep synthetic sample data isolated.
 6. Implement trusted server-side RBAC before enabling admin operations.
+
+
+## Documentation revision CI
+
+The follow-up documentation commit `6a66abedf5ab46e7fcb75db271cfd71d06aa753c` also passed the web prototype workflow: [run 46098978646](https://github.com/abdulsalambt2024/aniguard.ai/actions/runs/46098978646) — success. The code-change verification remains the more meaningful check: run 46098848407 passed the request-guard tests, server-route TypeScript check, targeted ESLint and Vite production build on code head `64d010e...`.
